@@ -249,6 +249,83 @@ php run-tests.php
 
 ## 🔧 Development
 
+### Quick Commands (Cross-Platform)
+
+**Windows:**
+```bash
+.\scripts\dev.bat help          # Show all available commands
+.\scripts\dev.bat setup         # Complete project setup
+.\scripts\dev.bat migrate       # Run database migrations
+.\scripts\dev.bat show-creds    # Show admin credentials
+.\scripts\dev.bat test          # Run all tests
+```
+
+**Linux/Mac:**
+```bash
+./scripts/dev.sh help           # Show all available commands
+./scripts/dev.sh setup          # Complete project setup
+./scripts/dev.sh migrate        # Run database migrations
+./scripts/dev.sh show-creds     # Show admin credentials
+./scripts/dev.sh test           # Run all tests
+```
+
+**Makefile (Linux/Mac):**
+```bash
+make help                       # Show all available commands
+make setup                      # Complete project setup
+make migrate                    # Run database migrations
+make show-creds                 # Show admin credentials
+make test                       # Run all tests
+```
+
+### Available Commands
+
+#### 🐳 Docker Management
+- `up` - Start all containers
+- `down` - Stop all containers
+- `restart` - Restart all containers
+- `logs` - Show container logs
+- `shell` - Open shell in app container
+
+#### 🗄️ Database Operations
+- `migrate` - Run all database migrations
+- `setup-db` - Setup database (create tables)
+- `seed` - Seed database with sample data
+- `db-shell` - Open MySQL shell
+- `db-status` - Check database connection
+
+#### 👤 User Management
+- `admin` - Create default admin user
+- `admin-custom` - Create custom admin user
+- `show-creds` - Show admin credentials
+- `create-user` - Create a new user
+
+#### 🧪 Testing
+- `test` - Run all tests
+- `test-unit` - Run unit tests only
+- `test-integration` - Run integration tests only
+- `test-feature` - Run feature tests only
+- `test-coverage` - Run tests with coverage
+
+#### 🔧 Development
+- `install` - Install PHP dependencies
+- `update` - Update PHP dependencies
+- `cs-check` - Check code style
+- `cs-fix` - Fix code style
+- `stan` - Run static analysis
+
+#### 📊 Learning Portal
+- `test-portal` - Test learning portal functionality
+- `test-routing` - Test routing system
+- `test-auth` - Test authentication system
+
+#### 🛠️ Utilities
+- `clean` - Clean up temporary files
+- `status` - Show project status
+- `backup` - Create database backup
+- `setup` - Complete project setup
+
+### Traditional Commands (Inside Container)
 - Run tests: `composer test`
 - Check code style: `composer cs-check`
 - Fix code style: `composer cs-fix`
