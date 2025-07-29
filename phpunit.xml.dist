@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="vendor/autoload.php"
+         colors="true"
+         verbose="true">
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="DB_HOST" value="localhost"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_NAME" value="ddd_test"/>
+        <env name="DB_USER" value="ddd_user"/>
+        <env name="DB_PASSWORD" value="secret"/>
+        <env name="JWT_SECRET" value="test-secret-key"/>
+        <env name="PASSWORD_HASH_COST" value="4"/>
+    </php>
+</phpunit> 

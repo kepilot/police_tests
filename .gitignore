@@ -1,0 +1,60 @@
+# Environment files
+.env
+.env.local
+.env.production
+.env.staging
+
+# Credentials and secrets
+credentials.json
+credentials.local.json
+secrets.json
+admin-credentials.txt
+local-credentials.md
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Cache and temporary files
+cache/
+tmp/
+temp/
+
+# Composer
+vendor/
+composer.phar
+
+# Node modules (if any)
+node_modules/
+
+# Build artifacts
+build/
+dist/
+
+# Test coverage
+coverage/
+.phpunit.result.cache
+
+# Database files
+*.sqlite
+*.db
+
+# Backup files
+*.bak
+*.backup 

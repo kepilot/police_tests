@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ddd-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - ddd-network
+
+  # Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: ddd-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - ddd-network
+
+  # MySQL Service
+  db:
+    image: mysql:8.0
+    container_name: ddd-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ddd_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: secret
+      MYSQL_USER: ddd_user
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - ddd-network
+
+  # PHPMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: ddd-phpmyadmin
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8081:80"
+    networks:
+      - ddd-network
+
+networks:
+  ddd-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local 
