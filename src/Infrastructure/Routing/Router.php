@@ -12,6 +12,7 @@ final class Router
 {
     private array $routes = [];
     private array $publicRoutes = [
+        '/',
         '/auth/login',
         '/auth/register',
         '/login.html',
@@ -33,6 +34,13 @@ final class Router
 
     private function registerDefaultRoutes(): void
     {
+        // Root route - redirect to login page
+        $this->addRoute('GET', '/', [$this, 'handleRoot'], false);
+
+        // Static HTML files (public)
+        $this->addRoute('GET', '/login.html', [$this, 'handleLoginPage'], false);
+        $this->addRoute('GET', '/dashboard.html', [$this, 'handleDashboardPage'], false);
+
         // Authentication routes (public)
         $this->addRoute('POST', '/auth/register', [$this, 'handleRegister']);
         $this->addRoute('POST', '/auth/login', [$this, 'handleLogin']);
@@ -44,7 +52,6 @@ final class Router
         // Protected routes (require authentication)
         $this->addRoute('POST', '/users', [$this, 'handleCreateUser']);
         $this->addRoute('GET', '/users', [$this, 'handleListUsers']);
-        $this->addRoute('GET', '/dashboard.html', [$this, 'handleDashboard']);
         $this->addRoute('GET', '/profile', [$this, 'handleProfile']);
         $this->addRoute('PUT', '/profile', [$this, 'handleUpdateProfile']);
         $this->addRoute('POST', '/logout', [$this, 'handleLogout']);
@@ -354,6 +361,49 @@ final class Router
             'uptime' => '99.9%',
             'last_check' => date('Y-m-d H:i:s')
         ]);
+    }
+
+    public function handleRoot(string $path, string $method): void
+    {
+        // Check if user is already authenticated
+        if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+            // User is logged in, redirect to dashboard
+            header('Location: /dashboard.html');
+        } else {
+            // User is not logged in, redirect to login page
+            header('Location: /login.html');
+        }
+        exit();
+    }
+
+    public function handleLoginPage(string $path, string $method): void
+    {
+        $loginPath = __DIR__ . '/../../../public/login.html';
+        if (file_exists($loginPath)) {
+            header('Content-Type: text/html');
+            echo file_get_contents($loginPath);
+        } else {
+            http_response_code(404);
+            echo 'Login page not found';
+        }
+    }
+
+    public function handleDashboardPage(string $path, string $method): void
+    {
+        // Check if user is authenticated
+        if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+            header('Location: /login.html');
+            exit();
+        }
+
+        $dashboardPath = __DIR__ . '/../../../public/dashboard.html';
+        if (file_exists($dashboardPath)) {
+            header('Content-Type: text/html');
+            echo file_get_contents($dashboardPath);
+        } else {
+            http_response_code(404);
+            echo 'Dashboard not found';
+        }
     }
 
     public function handleUserSettings(string $path, string $method): void

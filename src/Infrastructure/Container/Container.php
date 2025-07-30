@@ -9,20 +9,26 @@ use App\Application\Commands\LoginUserHandler;
 use App\Application\Commands\RegisterUserHandler;
 use App\Application\Commands\CreateTopicHandler;
 use App\Application\Commands\CreateExamHandler;
+use App\Application\Commands\AssociateQuestionWithTopicHandler;
+use App\Application\Commands\DisassociateQuestionFromTopicHandler;
+use App\Application\Commands\SetQuestionTopicsHandler;
 use App\Domain\Repositories\UserRepositoryInterface;
 use App\Domain\Repositories\TopicRepositoryInterface;
 use App\Domain\Repositories\ExamRepositoryInterface;
 use App\Domain\Repositories\QuestionRepositoryInterface;
 use App\Domain\Repositories\ExamAttemptRepositoryInterface;
+use App\Domain\Repositories\QuestionTopicRepositoryInterface;
 use App\Infrastructure\Persistence\DatabaseConnection;
 use App\Infrastructure\Persistence\UserRepository;
 use App\Infrastructure\Persistence\TopicRepository;
 use App\Infrastructure\Persistence\ExamRepository;
 use App\Infrastructure\Persistence\QuestionRepository;
 use App\Infrastructure\Persistence\ExamAttemptRepository;
+use App\Infrastructure\Persistence\QuestionTopicRepository;
 use App\Infrastructure\Services\JwtService;
 use App\Infrastructure\Middleware\AuthMiddleware;
 use App\Infrastructure\Routing\Router;
+use App\Application\Services\QuestionTopicService;
 
 final class Container
 {
@@ -56,6 +62,14 @@ final class Container
         $this->services[ExamRepositoryInterface::class] = fn() => new ExamRepository($this->get(PDO::class));
         $this->services[QuestionRepositoryInterface::class] = fn() => new QuestionRepository($this->get(PDO::class));
         $this->services[ExamAttemptRepositoryInterface::class] = fn() => new ExamAttemptRepository($this->get(PDO::class));
+        $this->services[QuestionTopicRepositoryInterface::class] = fn() => new QuestionTopicRepository($this->get(PDO::class));
+        
+        // Services
+        $this->services[QuestionTopicService::class] = fn() => new QuestionTopicService(
+            $this->get(QuestionRepositoryInterface::class),
+            $this->get(TopicRepositoryInterface::class),
+            $this->get(QuestionTopicRepositoryInterface::class)
+        );
         
         // Command handlers
         $this->services[CreateUserHandler::class] = fn() => new CreateUserHandler($this->get(UserRepositoryInterface::class));
@@ -63,6 +77,9 @@ final class Container
         $this->services[LoginUserHandler::class] = fn() => new LoginUserHandler($this->get(UserRepositoryInterface::class), $this->get(JwtService::class));
         $this->services[CreateTopicHandler::class] = fn() => new CreateTopicHandler($this->get(TopicRepositoryInterface::class));
         $this->services[CreateExamHandler::class] = fn() => new CreateExamHandler($this->get(ExamRepositoryInterface::class), $this->get(TopicRepositoryInterface::class));
+        $this->services[AssociateQuestionWithTopicHandler::class] = fn() => new AssociateQuestionWithTopicHandler($this->get(QuestionTopicService::class));
+        $this->services[DisassociateQuestionFromTopicHandler::class] = fn() => new DisassociateQuestionFromTopicHandler($this->get(QuestionTopicService::class));
+        $this->services[SetQuestionTopicsHandler::class] = fn() => new SetQuestionTopicsHandler($this->get(QuestionTopicService::class));
     }
 
     public function get(string $id): object

@@ -10,6 +10,7 @@ use App\Domain\ValueObjects\TopicId;
 use App\Domain\ValueObjects\TopicTitle;
 use App\Domain\ValueObjects\TopicDescription;
 use App\Domain\ValueObjects\TopicLevel;
+use App\Domain\ValueObjects\QuestionId;
 use PDO;
 
 final class TopicRepository implements TopicRepositoryInterface
@@ -117,6 +118,42 @@ final class TopicRepository implements TopicRepositoryInterface
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['level' => $level->value()]);
         return (int) $stmt->fetchColumn();
+    }
+
+    public function findByQuestionId(QuestionId $questionId): array
+    {
+        $sql = "SELECT t.* FROM topics t
+                INNER JOIN question_topics qt ON t.id = qt.topic_id
+                WHERE qt.question_id = :question_id AND t.deleted_at IS NULL
+                ORDER BY t.created_at DESC";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['question_id' => $questionId->toString()]);
+        
+        $topics = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $topics[] = $this->createTopicFromRow($row);
+        }
+
+        return $topics;
+    }
+
+    public function findActiveByQuestionId(QuestionId $questionId): array
+    {
+        $sql = "SELECT t.* FROM topics t
+                INNER JOIN question_topics qt ON t.id = qt.topic_id
+                WHERE qt.question_id = :question_id AND t.is_active = 1 AND t.deleted_at IS NULL
+                ORDER BY t.created_at DESC";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['question_id' => $questionId->toString()]);
+        
+        $topics = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $topics[] = $this->createTopicFromRow($row);
+        }
+
+        return $topics;
     }
 
     private function createTopicFromRow(array $row): Topic

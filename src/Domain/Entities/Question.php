@@ -8,6 +8,7 @@ use App\Domain\ValueObjects\QuestionId;
 use App\Domain\ValueObjects\QuestionText;
 use App\Domain\ValueObjects\QuestionType;
 use App\Domain\ValueObjects\ExamId;
+use App\Domain\ValueObjects\TopicId;
 use DateTimeImmutable;
 
 final class Question
@@ -23,6 +24,7 @@ final class Question
     private DateTimeImmutable $createdAt;
     private ?DateTimeImmutable $updatedAt;
     private ?DateTimeImmutable $deletedAt;
+    private array $topicIds;
 
     public function __construct(
         QuestionText $text,
@@ -43,6 +45,7 @@ final class Question
         $this->createdAt = new DateTimeImmutable();
         $this->updatedAt = null;
         $this->deletedAt = null;
+        $this->topicIds = [];
     }
 
     public function getId(): QuestionId
@@ -145,6 +148,49 @@ final class Question
     {
         $this->deletedAt = null;
         $this->isActive = true;
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    // Topic association methods
+    public function getTopicIds(): array
+    {
+        return $this->topicIds;
+    }
+
+    public function addTopicId(TopicId $topicId): void
+    {
+        $topicIdString = $topicId->toString();
+        if (!in_array($topicIdString, $this->topicIds)) {
+            $this->topicIds[] = $topicIdString;
+            $this->updatedAt = new DateTimeImmutable();
+        }
+    }
+
+    public function removeTopicId(TopicId $topicId): void
+    {
+        $topicIdString = $topicId->toString();
+        $key = array_search($topicIdString, $this->topicIds);
+        if ($key !== false) {
+            unset($this->topicIds[$key]);
+            $this->topicIds = array_values($this->topicIds); // Re-index array
+            $this->updatedAt = new DateTimeImmutable();
+        }
+    }
+
+    public function hasTopicId(TopicId $topicId): bool
+    {
+        return in_array($topicId->toString(), $this->topicIds);
+    }
+
+    public function setTopicIds(array $topicIds): void
+    {
+        $this->topicIds = array_map(fn(TopicId $topicId) => $topicId->toString(), $topicIds);
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function clearTopicIds(): void
+    {
+        $this->topicIds = [];
         $this->updatedAt = new DateTimeImmutable();
     }
 } 

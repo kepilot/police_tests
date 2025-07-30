@@ -7,6 +7,7 @@ namespace App\Domain\Repositories;
 use App\Domain\Entities\Question;
 use App\Domain\ValueObjects\QuestionId;
 use App\Domain\ValueObjects\ExamId;
+use App\Domain\ValueObjects\TopicId;
 
 interface QuestionRepositoryInterface
 {
@@ -27,4 +28,8 @@ interface QuestionRepositoryInterface
     public function countByExamId(ExamId $examId): int;
     
     public function getTotalPointsByExamId(ExamId $examId): int;
+    
+    public function findByTopicId(TopicId $topicId): array;
+    
+    public function findActiveByTopicId(TopicId $topicId): array;
 } 
