@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDD Admin Portal</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div id="access-denied" style="display: none; text-align: center; padding: 50px;">
+        <h1>Access Denied</h1>
+        <p>You don't have permission to access the admin panel.</p>
+        <a href="/dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+    </div>
+    
+    <div id="admin-content" style="display: none;">
+        <a href="/dashboard.html" class="back-btn">← Back to Dashboard</a>
+        <a href="/logout" class="logout-btn">Logout</a>
+    
+    <div class="container">
+        <div class="header">
+            <h1>DDD Learning Portal - Admin Dashboard</h1>
+            <p>Manage topics, questions, and exams</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('topics')">Topics</button>
+            <button class="nav-tab" onclick="showTab('questions')">Questions</button>
+            <button class="nav-tab" onclick="showTab('exams')">Exams</button>
+            <button class="nav-tab" onclick="showTab('assignments')">Exam Assignments</button>
+        </div>
+
+        <!-- Topics Tab -->
+        <div id="topics" class="content">
+            <h2>Topic Management</h2>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="showCreateTopicForm()">Create New Topic</button>
+                <button class="btn btn-success" onclick="loadTopics()">Refresh List</button>
+            </div>
+            
+            <div id="topic-form" class="hidden">
+                <h3 id="topic-form-title">Create New Topic</h3>
+                <form id="topicForm" onsubmit="saveTopic(event)">
+                    <input type="hidden" id="topicId" name="id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="topicTitle">Title</label>
+                            <input type="text" id="topicTitle" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="topicLevel">Level</label>
+                            <select id="topicLevel" name="level" required>
+                                <option value="">Select Level</option>
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                                <option value="expert">Expert</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="topicDescription">Description</label>
+                        <textarea id="topicDescription" name="description" required></textarea>
+                    </div>
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-primary">Save Topic</button>
+                        <button type="button" class="btn btn-warning" onclick="cancelTopicForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="topics-list">
+                <div class="loading">Loading topics...</div>
+            </div>
+        </div>
+
+        <!-- Questions Tab -->
+        <div id="questions" class="content hidden">
+            <h2>Question Management</h2>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="showCreateQuestionForm()">Create New Question</button>
+                <button class="btn btn-success" onclick="loadQuestions()">Refresh List</button>
+            </div>
+            
+            <div id="question-form" class="hidden">
+                <h3 id="question-form-title">Create New Question</h3>
+                <form id="questionForm" onsubmit="saveQuestion(event)">
+                    <input type="hidden" id="questionId" name="id">
+                    <div class="form-group">
+                        <label for="questionText">Question Text</label>
+                        <textarea id="questionText" name="text" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="questionType">Type</label>
+                            <select id="questionType" name="type" required onchange="toggleOptions()">
+                                <option value="">Select Type</option>
+                                <option value="multiple_choice">Multiple Choice</option>
+                                <option value="single_choice">Single Choice</option>
+                                <option value="true_false">True/False</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="questionExam">Exam</label>
+                            <select id="questionExam" name="exam_id" required>
+                                <option value="">Select Exam</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="questionPoints">Points</label>
+                            <input type="number" id="questionPoints" name="points" value="1" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="questionCorrectOption">Correct Option (0-based index)</label>
+                            <input type="number" id="questionCorrectOption" name="correct_option" min="0" required>
+                        </div>
+                    </div>
+                    <div id="options-container" class="hidden">
+                        <h4>Options</h4>
+                        <div id="options-list">
+                            <div class="form-group">
+                                <label>Option 1</label>
+                                <input type="text" name="options[]" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Option 2</label>
+                                <input type="text" name="options[]" required>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-warning" onclick="addOption()">Add Option</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Associated Topics (optional)</label>
+                        <div id="questionTopicsCheckboxes" class="topics-container">
+                            <!-- Topic checkboxes will be loaded here -->
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-primary">Save Question</button>
+                        <button type="button" class="btn btn-warning" onclick="cancelQuestionForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="questions-list">
+                <div class="loading">Loading questions...</div>
+            </div>
+        </div>
+
+        <!-- Exams Tab -->
+        <div id="exams" class="content hidden">
+            <h2>Exam Management</h2>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="showCreateExamForm()">Create New Exam</button>
+                <button class="btn btn-success" onclick="loadExams()">Refresh List</button>
+            </div>
+            
+            <div id="exam-form" class="hidden">
+                <h3 id="exam-form-title">Create New Exam</h3>
+                <form id="examForm" onsubmit="saveExam(event)">
+                    <input type="hidden" id="examId" name="id">
+                    <div class="form-group">
+                        <label for="examTitle">Title</label>
+                        <input type="text" id="examTitle" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="examDescription">Description</label>
+                        <textarea id="examDescription" name="description" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="examDuration">Duration (minutes)</label>
+                            <input type="number" id="examDuration" name="duration_minutes" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="examPassingScore">Passing Score (%)</label>
+                            <input type="number" id="examPassingScore" name="passing_score_percentage" min="1" max="100" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="examTopic">Topic</label>
+                        <select id="examTopic" name="topic_id" required>
+                            <option value="">Select Topic</option>
+                        </select>
+                    </div>
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-primary">Save Exam</button>
+                        <button type="button" class="btn btn-warning" onclick="cancelExamForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="exams-list">
+                <div class="loading">Loading exams...</div>
+            </div>
+        </div>
+
+        <!-- Exam Assignments Tab -->
+        <div id="assignments" class="content hidden">
+            <h2>Exam Assignment Management</h2>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="showAssignExamForm()">Assign Exam to User</button>
+                <button class="btn btn-success" onclick="loadAssignments()">Refresh List</button>
+            </div>
+            
+            <div id="assignment-form" class="hidden">
+                <h3 id="assignment-form-title">Assign Exam to User</h3>
+                <form id="assignmentForm" onsubmit="saveAssignment(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="assignmentUserId">User</label>
+                            <select id="assignmentUserId" name="userId" required>
+                                <option value="">Select User</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="assignmentExamId">Exam</label>
+                            <select id="assignmentExamId" name="examId" required>
+                                <option value="">Select Exam</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="assignmentDueDate">Due Date (Optional)</label>
+                            <input type="datetime-local" id="assignmentDueDate" name="dueDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="assignmentAssignedBy">Assigned By</label>
+                            <select id="assignmentAssignedBy" name="assignedBy" required>
+                                <option value="">Select Admin User</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-primary">Assign Exam</button>
+                        <button type="button" class="btn btn-warning" onclick="cancelAssignmentForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="assignments-list">
+                <div class="loading">Loading assignments...</div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        // Access control check
+        function checkAdminAccess() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showAccessDenied('No authentication token found');
+                return;
+            }
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('JWT payload:', payload);
+                
+                if (payload.role === 'admin' || payload.role === 'superadmin') {
+                    // User is admin, show admin content
+                    document.getElementById('access-denied').style.display = 'none';
+                    document.getElementById('admin-content').style.display = 'block';
+                    console.log('Admin access granted');
+                } else {
+                    // User is not admin, show access denied
+                    showAccessDenied('You need admin privileges to access this page');
+                }
+            } catch (e) {
+                console.error('Error parsing token:', e);
+                showAccessDenied('Invalid authentication token');
+            }
+        }
+
+        function showAccessDenied(message) {
+            document.getElementById('access-denied').style.display = 'block';
+            document.getElementById('admin-content').style.display = 'none';
+            document.getElementById('access-denied').innerHTML = `
+                <h1>Access Denied</h1>
+                <p>${message}</p>
+                <a href="/dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+            `;
+        }
+
+        // Check access when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminAccess();
+        });
+    </script>
+    
+    <script src="/js/admin.js"></script>
+</body>
+</html> 

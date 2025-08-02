@@ -30,6 +30,7 @@ final class JwtService
             'sub' => $user->getId()->toString(), // Subject (user ID)
             'email' => $user->getEmail()->value(),
             'name' => $user->getName(),
+            'role' => $user->getRole(), // User role for authorization
         ];
 
         return JWT::encode($payload, $this->secret, 'HS256');

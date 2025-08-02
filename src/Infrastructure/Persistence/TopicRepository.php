@@ -21,27 +21,47 @@ final class TopicRepository implements TopicRepositoryInterface
 
     public function save(Topic $topic): void
     {
-        $sql = "INSERT INTO topics (id, title, description, level, is_active, created_at, updated_at, deleted_at) 
-                VALUES (:id, :title, :description, :level, :is_active, :created_at, :updated_at, :deleted_at)
-                ON DUPLICATE KEY UPDATE 
-                title = :title, 
-                description = :description, 
-                level = :level, 
-                is_active = :is_active, 
-                updated_at = :updated_at, 
-                deleted_at = :deleted_at";
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'id' => $topic->getId()->toString(),
-            'title' => $topic->getTitle()->value(),
-            'description' => $topic->getDescription()->value(),
-            'level' => $topic->getLevel()->value(),
-            'is_active' => $topic->isActive(),
-            'created_at' => $topic->getCreatedAt()->format('Y-m-d H:i:s'),
-            'updated_at' => $topic->getUpdatedAt()?->format('Y-m-d H:i:s'),
-            'deleted_at' => $topic->getDeletedAt()?->format('Y-m-d H:i:s')
-        ]);
+        // Check if topic exists
+        $existingTopic = $this->findById($topic->getId());
+        
+        if ($existingTopic) {
+            // Update existing topic
+            $sql = "UPDATE topics SET 
+                    title = :title, 
+                    description = :description, 
+                    level = :level, 
+                    is_active = :is_active, 
+                    updated_at = :updated_at, 
+                    deleted_at = :deleted_at
+                    WHERE id = :id";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                'id' => $topic->getId()->toString(),
+                'title' => $topic->getTitle()->value(),
+                'description' => $topic->getDescription()->value(),
+                'level' => $topic->getLevel()->value(),
+                'is_active' => $topic->isActive(),
+                'updated_at' => $topic->getUpdatedAt()?->format('Y-m-d H:i:s'),
+                'deleted_at' => $topic->getDeletedAt()?->format('Y-m-d H:i:s')
+            ]);
+        } else {
+            // Insert new topic
+            $sql = "INSERT INTO topics (id, title, description, level, is_active, created_at, updated_at, deleted_at) 
+                    VALUES (:id, :title, :description, :level, :is_active, :created_at, :updated_at, :deleted_at)";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                'id' => $topic->getId()->toString(),
+                'title' => $topic->getTitle()->value(),
+                'description' => $topic->getDescription()->value(),
+                'level' => $topic->getLevel()->value(),
+                'is_active' => $topic->isActive(),
+                'created_at' => $topic->getCreatedAt()->format('Y-m-d H:i:s'),
+                'updated_at' => $topic->getUpdatedAt()?->format('Y-m-d H:i:s'),
+                'deleted_at' => $topic->getDeletedAt()?->format('Y-m-d H:i:s')
+            ]);
+        }
     }
 
     public function findById(TopicId $id): ?Topic
@@ -97,6 +117,24 @@ final class TopicRepository implements TopicRepositoryInterface
         }
 
         return $topics;
+    }
+
+    public function findByTitleAndLevel(string $title, string $level): ?Topic
+    {
+        $sql = "SELECT * FROM topics WHERE title = :title AND level = :level AND deleted_at IS NULL LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'title' => $title,
+            'level' => $level
+        ]);
+        
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$row) {
+            return null;
+        }
+
+        return $this->createTopicFromRow($row);
     }
 
     public function delete(TopicId $id): void

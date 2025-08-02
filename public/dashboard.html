@@ -4,116 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DDD User Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .user-info {
-            background-color: #e3f2fd;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .stat-label {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-        .actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            text-decoration: none;
-            text-align: center;
-            display: inline-block;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn:hover {
-            opacity: 0.9;
-        }
-        .logout-btn {
-            background-color: #dc3545;
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .welcome-message {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-            color: #333;
-        }
-        .last-login {
-            color: #666;
-            font-size: 0.9em;
-        }
-        .token-info {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 20px;
-            font-family: monospace;
-            font-size: 0.8em;
-            word-break: break-all;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
     <div class="header">
@@ -121,7 +12,11 @@
             <h1>DDD User Dashboard</h1>
             <p>Welcome to your secure portal</p>
         </div>
-        <button class="logout-btn" onclick="logout()">Logout</button>
+        <div>
+            <!-- Admin button is hidden by default and will be shown only for admin users via JavaScript -->
+            <button class="admin-btn" onclick="goToAdmin()" style="display: none;">Admin Panel</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
     </div>
 
     <div class="container">
@@ -130,30 +25,16 @@
             <div class="last-login" id="lastLogin">Last login: Loading...</div>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number" id="totalUsers">-</div>
-                <div class="stat-label">Total Users</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="activeUsers">-</div>
-                <div class="stat-label">Active Users</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="todayLogins">-</div>
-                <div class="stat-label">Today's Logins</div>
+        <div class="exam-assignments">
+            <h2>📝 My Exam Assignments</h2>
+            <div id="assignmentsContainer" class="loading">
+                Loading your exam assignments...
             </div>
         </div>
 
         <div class="actions">
-            <a href="#" class="btn btn-primary" onclick="loadUsers()">View All Users</a>
-            <a href="#" class="btn btn-secondary" onclick="refreshStats()">Refresh Stats</a>
             <a href="#" class="btn btn-secondary" onclick="showTokenInfo()">Show Token Info</a>
-        </div>
-
-        <div id="usersList" style="display: none; margin-top: 30px;">
-            <h3>Users List</h3>
-            <div id="usersContent"></div>
+            <a href="#" class="btn btn-primary" onclick="refreshAssignments()">Refresh Assignments</a>
         </div>
 
         <div id="tokenInfo" class="token-info" style="display: none;">
@@ -162,97 +43,6 @@
         </div>
     </div>
 
-    <script>
-        // Check if user is authenticated
-        function checkAuth() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = '/login.html';
-                return;
-            }
-            loadUserInfo();
-            loadStats();
-        }
-
-        function loadUserInfo() {
-            const token = localStorage.getItem('token');
-            if (!token) return;
-
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                document.getElementById('welcomeMessage').textContent = `Welcome, ${payload.name}!`;
-                document.getElementById('lastLogin').textContent = `Last login: ${new Date().toLocaleString()}`;
-            } catch (e) {
-                console.error('Error parsing token:', e);
-            }
-        }
-
-        async function loadStats() {
-            try {
-                const response = await fetch('/users', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    // For now, we'll show placeholder stats
-                    document.getElementById('totalUsers').textContent = '1';
-                    document.getElementById('activeUsers').textContent = '1';
-                    document.getElementById('todayLogins').textContent = '1';
-                }
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
-        }
-
-        async function loadUsers() {
-            try {
-                const response = await fetch('/users', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                const data = await response.json();
-                const usersDiv = document.getElementById('usersContent');
-                
-                if (data.success) {
-                    usersDiv.innerHTML = '<p>Users endpoint available - implement user listing functionality</p>';
-                } else {
-                    usersDiv.innerHTML = `<p>Error: ${data.message}</p>`;
-                }
-                
-                document.getElementById('usersList').style.display = 'block';
-            } catch (error) {
-                console.error('Error loading users:', error);
-                document.getElementById('usersContent').innerHTML = '<p>Error loading users</p>';
-                document.getElementById('usersList').style.display = 'block';
-            }
-        }
-
-        function refreshStats() {
-            loadStats();
-        }
-
-        function showTokenInfo() {
-            const token = localStorage.getItem('token');
-            if (token) {
-                document.getElementById('tokenText').textContent = token;
-                document.getElementById('tokenInfo').style.display = 'block';
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            window.location.href = '/login.html';
-        }
-
-        // Check authentication on page load
-        checkAuth();
-    </script>
+    <script src="/js/dashboard.js"></script>
 </body>
 </html> 

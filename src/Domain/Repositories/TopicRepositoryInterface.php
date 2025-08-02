@@ -21,6 +21,8 @@ interface TopicRepositoryInterface
     
     public function findActive(): array;
     
+    public function findByTitleAndLevel(string $title, string $level): ?Topic;
+    
     public function delete(TopicId $id): void;
     
     public function count(): int;

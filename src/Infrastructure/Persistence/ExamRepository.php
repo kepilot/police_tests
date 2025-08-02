@@ -22,31 +22,53 @@ final class ExamRepository implements ExamRepositoryInterface
 
     public function save(Exam $exam): void
     {
-        $sql = "INSERT INTO exams (id, title, description, duration_minutes, passing_score_percentage, topic_id, is_active, created_at, updated_at, deleted_at) 
-                VALUES (:id, :title, :description, :duration_minutes, :passing_score_percentage, :topic_id, :is_active, :created_at, :updated_at, :deleted_at)
-                ON DUPLICATE KEY UPDATE 
-                title = :title, 
-                description = :description, 
-                duration_minutes = :duration_minutes, 
-                passing_score_percentage = :passing_score_percentage, 
-                topic_id = :topic_id, 
-                is_active = :is_active, 
-                updated_at = :updated_at, 
-                deleted_at = :deleted_at";
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'id' => $exam->getId()->toString(),
-            'title' => $exam->getTitle()->value(),
-            'description' => $exam->getDescription()->value(),
-            'duration_minutes' => $exam->getDuration()->value(),
-            'passing_score_percentage' => $exam->getPassingScore()->value(),
-            'topic_id' => $exam->getTopicId()->toString(),
-            'is_active' => $exam->isActive(),
-            'created_at' => $exam->getCreatedAt()->format('Y-m-d H:i:s'),
-            'updated_at' => $exam->getUpdatedAt()?->format('Y-m-d H:i:s'),
-            'deleted_at' => $exam->getDeletedAt()?->format('Y-m-d H:i:s')
-        ]);
+        // Check if exam exists
+        $existingExam = $this->findById($exam->getId());
+        
+        if ($existingExam) {
+            // Update existing exam
+            $sql = "UPDATE exams SET 
+                    title = :title, 
+                    description = :description, 
+                    duration_minutes = :duration_minutes, 
+                    passing_score_percentage = :passing_score_percentage, 
+                    topic_id = :topic_id, 
+                    is_active = :is_active, 
+                    updated_at = :updated_at, 
+                    deleted_at = :deleted_at
+                    WHERE id = :id";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                'id' => $exam->getId()->toString(),
+                'title' => $exam->getTitle()->value(),
+                'description' => $exam->getDescription()->value(),
+                'duration_minutes' => $exam->getDuration()->value(),
+                'passing_score_percentage' => $exam->getPassingScore()->value(),
+                'topic_id' => $exam->getTopicId()->toString(),
+                'is_active' => $exam->isActive(),
+                'updated_at' => $exam->getUpdatedAt()?->format('Y-m-d H:i:s'),
+                'deleted_at' => $exam->getDeletedAt()?->format('Y-m-d H:i:s')
+            ]);
+        } else {
+            // Insert new exam
+            $sql = "INSERT INTO exams (id, title, description, duration_minutes, passing_score_percentage, topic_id, is_active, created_at, updated_at, deleted_at) 
+                    VALUES (:id, :title, :description, :duration_minutes, :passing_score_percentage, :topic_id, :is_active, :created_at, :updated_at, :deleted_at)";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                'id' => $exam->getId()->toString(),
+                'title' => $exam->getTitle()->value(),
+                'description' => $exam->getDescription()->value(),
+                'duration_minutes' => $exam->getDuration()->value(),
+                'passing_score_percentage' => $exam->getPassingScore()->value(),
+                'topic_id' => $exam->getTopicId()->toString(),
+                'is_active' => $exam->isActive(),
+                'created_at' => $exam->getCreatedAt()->format('Y-m-d H:i:s'),
+                'updated_at' => $exam->getUpdatedAt()?->format('Y-m-d H:i:s'),
+                'deleted_at' => $exam->getDeletedAt()?->format('Y-m-d H:i:s')
+            ]);
+        }
     }
 
     public function findById(ExamId $id): ?Exam

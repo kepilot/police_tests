@@ -116,6 +116,12 @@ final class UserRepository implements UserRepositoryInterface
         return $users;
     }
 
+    public function count(): int
+    {
+        $sql = "SELECT COUNT(*) FROM users";
+        return (int) $this->pdo->query($sql)->fetchColumn();
+    }
+
     private function createUserFromRow(array $row): User
     {
         $user = new User(

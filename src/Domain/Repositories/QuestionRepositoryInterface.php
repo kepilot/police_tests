@@ -17,6 +17,8 @@ interface QuestionRepositoryInterface
     
     public function findAll(): array;
     
+    public function findActive(): array;
+    
     public function findByExamId(ExamId $examId): array;
     
     public function findActiveByExamId(ExamId $examId): array;

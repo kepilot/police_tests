@@ -27,6 +27,10 @@ interface ExamAttemptRepositoryInterface
     
     public function findPassedByUserId(UserId $userId): array;
     
+    public function findCompleted(): array;
+    
+    public function findPassed(): array;
+    
     public function delete(ExamAttemptId $id): void;
     
     public function count(): int;
@@ -38,4 +42,6 @@ interface ExamAttemptRepositoryInterface
     public function getAverageScoreByExamId(ExamId $examId): float;
     
     public function getPassRateByExamId(ExamId $examId): float;
+    
+    public function getAverageScoreByUserId(UserId $userId): float;
 } 

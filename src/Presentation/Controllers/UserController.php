@@ -75,18 +75,19 @@ final class UserController
         }
     }
 
-    public function createUser(string $name, string $email): array
+    public function createUser(string $name, string $email, string $password = 'defaultPassword123!'): array
     {
         try {
-            $command = new CreateUserCommand($name, new Email($email));
+            $command = new CreateUserCommand($name, new Email($email), new Password($password));
             $handler = $this->container->get(\App\Application\Commands\CreateUserHandler::class);
             
-            $handler($command);
+            $user = $handler($command);
 
             return [
                 'success' => true,
                 'message' => 'User created successfully',
                 'data' => [
+                    'id' => $user->getId()->toString(),
                     'name' => $name,
                     'email' => $email
                 ]
@@ -108,11 +109,23 @@ final class UserController
     {
         try {
             $repository = $this->container->get(\App\Domain\Repositories\UserRepositoryInterface::class);
-            
-            // For now, we'll return a simple message since we don't have a findAll method
+            $users = $repository->findAll();
+
+            $usersData = [];
+            foreach ($users as $user) {
+                $usersData[] = [
+                    'id' => $user->getId()->toString(),
+                    'name' => $user->getName(),
+                    'email' => $user->getEmail()->value(),
+                    'role' => $user->getRole(),
+                    'is_active' => $user->isActive(),
+                    'created_at' => $user->getCreatedAt()->format('Y-m-d H:i:s')
+                ];
+            }
+
             return [
                 'success' => true,
-                'message' => 'Users list endpoint - implement findAll method in repository'
+                'data' => $usersData
             ];
         } catch (\Exception $e) {
             return [

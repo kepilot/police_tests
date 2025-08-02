@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Exam - Learning Portal</title>
+    <link rel="stylesheet" href="/css/exam.css">
+    <script>
+        // Cache busting for JavaScript files
+        function addCacheBuster(url) {
+            const separator = url.includes('?') ? '&' : '?';
+            return `${url}${separator}v=${Date.now()}`;
+        }
+        
+        // Load JavaScript with cache busting
+        function loadScript(src) {
+            const script = document.createElement('script');
+            script.src = addCacheBuster(src);
+            document.head.appendChild(script);
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Take Exam</h1>
+            <p id="examTitle">Loading exam...</p>
+        </div>
+        
+        <div class="content">
+            <!-- Loading State -->
+            <div id="loadingState" class="loading">
+                <h3>Loading your exam...</h3>
+                <p>Please wait while we prepare your exam.</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="error hidden">
+                <h3>Error</h3>
+                <p id="errorMessage"></p>
+                <button class="btn btn-secondary" onclick="location.reload()">Try Again</button>
+            </div>
+
+            <!-- Exam Interface -->
+            <div id="examInterface" class="hidden">
+                <div class="exam-info">
+                    <h2 id="examTitleInfo">Exam Title</h2>
+                    <p id="examDescription">Exam description</p>
+                    <p><strong>Duration:</strong> <span id="examDuration">30</span> minutes</p>
+                    <p><strong>Passing Score:</strong> <span id="passingScore">70</span>%</p>
+                </div>
+
+                <div class="timer">
+                    <div>Time Remaining: <span id="timeRemaining">--:--</span></div>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+                </div>
+
+                <div id="questionsContainer">
+                    <!-- Questions will be loaded here -->
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-secondary" onclick="saveProgress()">Save Progress</button>
+                    <button class="btn btn-success" onclick="submitExam()">Submit Exam</button>
+                    <button class="btn btn-danger" onclick="confirmExit()">Exit Exam</button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="resultsContainer" class="hidden">
+                <div class="results">
+                    <h2>Exam Results</h2>
+                    <div id="resultsContent">
+                        <!-- Results will be displayed here -->
+                    </div>
+                    <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load exam.js with cache busting
+        loadScript('/js/exam.js');
+    </script>
+</body>
+</html> 

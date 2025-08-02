@@ -96,6 +96,30 @@ final class ExamAttempt
         return $this->completedAt !== null;
     }
 
+    public function getTotalPoints(): int
+    {
+        // This would need to be calculated from the exam questions
+        // For now, return a default value
+        return 0;
+    }
+
+    public function getPercentageScore(): float
+    {
+        // This would need to be calculated from the exam questions
+        // For now, return a default value
+        return 0.0;
+    }
+
+    public function getDurationMinutes(): int
+    {
+        if (!$this->completedAt) {
+            return 0;
+        }
+
+        $duration = $this->completedAt->getTimestamp() - $this->startedAt->getTimestamp();
+        return (int) round($duration / 60);
+    }
+
     public function delete(): void
     {
         $this->deletedAt = new DateTimeImmutable();

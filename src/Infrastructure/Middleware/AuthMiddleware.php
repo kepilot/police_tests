@@ -74,6 +74,7 @@ final class AuthMiddleware
             $_SESSION['user_id'] = $payload['sub'];
             $_SESSION['user_email'] = $payload['email'];
             $_SESSION['user_name'] = $payload['name'];
+            $_SESSION['user_role'] = $payload['role'] ?? 'user';
             $_SESSION['authenticated_at'] = time();
 
             return true;
@@ -143,8 +144,24 @@ final class AuthMiddleware
         return $_SESSION['authenticated_at'] ?? null;
     }
 
+    public function getCurrentUserRole(): ?string
+    {
+        return $_SESSION['user_role'] ?? null;
+    }
+
+    public function isAdmin(): bool
+    {
+        $role = $this->getCurrentUserRole();
+        return $role === 'admin' || $role === 'superadmin';
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->getCurrentUserRole() === 'superadmin';
+    }
+
     public function clearSession(): void
     {
-        unset($_SESSION['user_id'], $_SESSION['user_email'], $_SESSION['user_name'], $_SESSION['authenticated_at']);
+        unset($_SESSION['user_id'], $_SESSION['user_email'], $_SESSION['user_name'], $_SESSION['user_role'], $_SESSION['authenticated_at']);
     }
 } 
