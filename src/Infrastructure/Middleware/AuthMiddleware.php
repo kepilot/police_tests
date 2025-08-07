@@ -100,8 +100,16 @@ final class AuthMiddleware
     {
         // Check if it's an API request (JSON content type expected)
         $contentType = $_SERVER['HTTP_ACCEPT'] ?? '';
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '';
         $isApiRequest = strpos($contentType, 'application/json') !== false || 
-                       strpos($_SERVER['REQUEST_URI'] ?? '', '/api/') === 0;
+                       strpos($requestUri, '/api/') === 0 ||
+                       strpos($requestUri, '/pdf/') === 0 ||
+                       strpos($requestUri, '/topics') === 0 ||
+                       strpos($requestUri, '/questions') === 0 ||
+                       strpos($requestUri, '/exams') === 0 ||
+                       strpos($requestUri, '/users') === 0 ||
+                       strpos($requestUri, '/exam-assignments') === 0 ||
+                       strpos($requestUri, '/learning/') === 0;
 
         if ($isApiRequest) {
             // Return JSON response for API requests

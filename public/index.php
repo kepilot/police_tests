@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 
 ini_set('log_errors', 1);
-ini_set('error_log', '/tmp/php-errors.log');
+ini_set('error_log', __DIR__ . '/php-errors.log');
 
 // Start session for authentication
 session_start();

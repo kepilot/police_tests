@@ -51,16 +51,19 @@ final class ExamAttemptController
             }
 
             // Check if there's already an active attempt
-            $existingAttempt = $attemptRepository->findByUserIdAndExamId(
+            $existingAttempts = $attemptRepository->findByUserIdAndExamId(
                 UserId::fromString($userId),
                 ExamId::fromString($examId)
             );
 
-            if ($existingAttempt && !$existingAttempt->isCompleted()) {
-                return [
-                    'success' => false,
-                    'message' => 'You already have an active attempt for this exam'
-                ];
+            // Check for any incomplete attempts
+            foreach ($existingAttempts as $existingAttempt) {
+                if (!$existingAttempt->isCompleted()) {
+                    return [
+                        'success' => false,
+                        'message' => 'You already have an active attempt for this exam'
+                    ];
+                }
             }
 
             // Create new attempt

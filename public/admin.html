@@ -28,6 +28,7 @@
             <button class="nav-tab" onclick="showTab('questions')">Questions</button>
             <button class="nav-tab" onclick="showTab('exams')">Exams</button>
             <button class="nav-tab" onclick="showTab('assignments')">Exam Assignments</button>
+            <button class="nav-tab" onclick="showTab('pdf-upload')">PDF Upload</button>
         </div>
 
         <!-- Topics Tab -->
@@ -243,6 +244,103 @@
 
             <div id="assignments-list">
                 <div class="loading">Loading assignments...</div>
+            </div>
+        </div>
+
+        <!-- PDF Upload Tab -->
+        <div id="pdf-upload" class="content hidden">
+            <h2>PDF Question Extraction</h2>
+            <p>Upload a PDF file to extract questions and answers. The system will attempt to identify questions, multiple choice options, and correct answers.</p>
+            
+            <div class="upload-section">
+                <h3>Step 1: Upload PDF</h3>
+                <form id="pdfUploadForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="pdfFile">Select PDF File</label>
+                        <input type="file" id="pdfFile" name="pdf_file" accept=".pdf" required>
+                        <small>Maximum file size: 10MB. Only PDF files are allowed.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload and Extract Questions</button>
+                </form>
+            </div>
+
+            <!-- New Review Questions View -->
+            <div id="review-questions" class="hidden">
+                <h3>Step 2: Review Extracted Questions</h3>
+                <div id="review-summary" class="summary-box">
+                    <p><strong>Total questions extracted:</strong> <span id="reviewTotalQuestions">0</span></p>
+                    <p><strong>Questions with answers:</strong> <span id="reviewQuestionsWithAnswers">0</span></p>
+                </div>
+                
+                <div id="review-questions-list">
+                    <!-- Questions will be displayed here for review -->
+                </div>
+
+                <div class="review-actions">
+                    <h3>Step 3: Choose Action</h3>
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="acceptAndImportQuestions()">Accept & Import Questions</button>
+                        <button class="btn btn-danger" onclick="rejectQuestions()">Reject & Go Back</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="extraction-results" class="hidden">
+                <h3>Step 2: Review Extracted Questions</h3>
+                <div id="extraction-summary" class="summary-box">
+                    <p><strong>Total questions extracted:</strong> <span id="totalQuestions">0</span></p>
+                    <p><strong>Questions with answers:</strong> <span id="questionsWithAnswers">0</span></p>
+                </div>
+                
+                <div id="extracted-questions-list">
+                    <!-- Questions will be displayed here -->
+                </div>
+
+                <div class="import-section">
+                    <h3>Step 3: Import to Database</h3>
+                    <form id="importForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="topicTitle">Topic Title (optional)</label>
+                                <input type="text" id="topicTitle" name="topic_title" placeholder="e.g., Math Fundamentals">
+                            </div>
+                            <div class="form-group">
+                                <label for="topicLevel">Topic Level</label>
+                                <select id="topicLevel" name="topic_level">
+                                    <option value="beginner">Beginner</option>
+                                    <option value="intermediate" selected>Intermediate</option>
+                                    <option value="advanced">Advanced</option>
+                                    <option value="expert">Expert</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="topicDescription">Topic Description (optional)</label>
+                            <textarea id="topicDescription" name="topic_description" placeholder="Description for the topic"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="examId">Assign to Exam (optional)</label>
+                            <select id="examId" name="exam_id">
+                                <option value="">Select Exam (optional)</option>
+                            </select>
+                        </div>
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-success">Import All Questions</button>
+                            <button type="button" class="btn btn-warning" onclick="resetPdfUpload()">Start Over</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="import-results" class="hidden">
+                <h3>Import Results</h3>
+                <div id="import-summary" class="summary-box">
+                    <!-- Import results will be displayed here -->
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="resetPdfUpload()">Upload Another PDF</button>
+                    <button class="btn btn-success" onclick="showTab('questions')">View All Questions</button>
+                </div>
             </div>
         </div>
     </div>

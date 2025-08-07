@@ -30,6 +30,7 @@ function loadUserInfo() {
 
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
+        console.log('Token payload:', payload);
         document.getElementById('welcomeMessage').textContent = `Welcome, ${payload.name}!`;
         document.getElementById('lastLogin').textContent = `Last login: ${new Date().toLocaleString()}`;
         currentUserId = payload.sub;

@@ -953,4 +953,314 @@ function showAlert(message, type) {
     setTimeout(() => {
         alertDiv.remove();
     }, 5000);
+}
+
+// PDF Upload Functions
+let extractedQuestions = [];
+
+// Initialize PDF upload functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const pdfUploadForm = document.getElementById('pdfUploadForm');
+    const importForm = document.getElementById('importForm');
+    
+    if (pdfUploadForm) {
+        pdfUploadForm.addEventListener('submit', handlePdfUpload);
+    }
+    
+    if (importForm) {
+        importForm.addEventListener('submit', handleImportQuestions);
+    }
+});
+
+async function handlePdfUpload(event) {
+    event.preventDefault();
+    
+    const fileInput = document.getElementById('pdfFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        showAlert('Please select a PDF file', 'error');
+        return;
+    }
+    
+    if (file.type !== 'application/pdf') {
+        showAlert('Please select a valid PDF file', 'error');
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) {
+        showAlert('File size too large. Maximum 10MB allowed', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('pdf_file', file);
+    
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showAlert('Authentication token not found. Please login again.', 'error');
+            return;
+        }
+        
+        const response = await fetch('/pdf/upload', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+        
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            // If not JSON, it's likely an HTML error page
+            if (response.status === 401) {
+                showAlert('Authentication failed. Please login again.', 'error');
+                // Redirect to login
+                window.location.href = '/login.html';
+                return;
+            } else if (response.status === 403) {
+                showAlert('Access denied. You need admin privileges.', 'error');
+                return;
+            } else {
+                showAlert('Server error. Please try again later.', 'error');
+                return;
+            }
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            extractedQuestions = data.data.questions;
+            displayReviewQuestions(extractedQuestions);
+        } else {
+            showAlert(data.message || 'Error extracting questions from PDF', 'error');
+        }
+    } catch (error) {
+        console.error('Error uploading PDF:', error);
+        showAlert('Error uploading PDF file: ' + error.message, 'error');
+    }
+}
+
+function displayExtractedQuestions(questions) {
+    const totalQuestions = questions.length;
+    const questionsWithAnswers = questions.filter(q => q.options && q.options.length > 0).length;
+    
+    document.getElementById('totalQuestions').textContent = totalQuestions;
+    document.getElementById('questionsWithAnswers').textContent = questionsWithAnswers;
+    
+    const questionsList = document.getElementById('extracted-questions-list');
+    questionsList.innerHTML = '';
+    
+    questions.forEach((question, index) => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'extracted-question';
+        
+        let optionsHtml = '';
+        if (question.options && question.options.length > 0) {
+            optionsHtml = '<div class="options">';
+            question.options.forEach((option, optionIndex) => {
+                const isCorrect = optionIndex === question.correct_option;
+                const optionClass = isCorrect ? 'option correct-option' : 'option';
+                optionsHtml += `<div class="${optionClass}">${String.fromCharCode(65 + optionIndex)}. ${option}</div>`;
+            });
+            optionsHtml += '</div>';
+        }
+        
+        questionDiv.innerHTML = `
+            <h4>Question ${index + 1}</h4>
+            <p>${question.question}</p>
+            ${optionsHtml}
+            <p><strong>Type:</strong> ${question.type} | <strong>Points:</strong> ${question.points}</p>
+        `;
+        
+        questionsList.appendChild(questionDiv);
+    });
+    
+    document.getElementById('extraction-results').classList.remove('hidden');
+}
+
+function displayReviewQuestions(questions) {
+    const totalQuestions = questions.length;
+    const questionsWithAnswers = questions.filter(q => q.options && q.options.length > 0).length;
+    
+    document.getElementById('reviewTotalQuestions').textContent = totalQuestions;
+    document.getElementById('reviewQuestionsWithAnswers').textContent = questionsWithAnswers;
+    
+    const questionsList = document.getElementById('review-questions-list');
+    questionsList.innerHTML = '';
+    
+    questions.forEach((question, index) => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'review-question';
+        
+        let optionsHtml = '';
+        if (question.options && question.options.length > 0) {
+            optionsHtml = '<div class="options">';
+            question.options.forEach((option, optionIndex) => {
+                const isCorrect = optionIndex === question.correct_option;
+                const optionClass = isCorrect ? 'option correct-option' : 'option';
+                optionsHtml += `<div class="${optionClass}">${String.fromCharCode(65 + optionIndex)}. ${option}</div>`;
+            });
+            optionsHtml += '</div>';
+        }
+        
+        questionDiv.innerHTML = `
+            <h4>Question ${index + 1}</h4>
+            <p>${question.question}</p>
+            ${optionsHtml}
+            <p><strong>Type:</strong> ${question.type} | <strong>Points:</strong> ${question.points}</p>
+        `;
+        
+        questionsList.appendChild(questionDiv);
+    });
+    
+    // Hide upload section and show review section
+    document.querySelector('.upload-section').classList.add('hidden');
+    document.getElementById('review-questions').classList.remove('hidden');
+}
+
+function acceptAndImportQuestions() {
+    // Show the import form with the extracted questions
+    displayExtractedQuestions(extractedQuestions);
+    loadExamsForPdfImport();
+    
+    // Hide review section and show import section
+    document.getElementById('review-questions').classList.add('hidden');
+    document.getElementById('extraction-results').classList.remove('hidden');
+}
+
+function rejectQuestions() {
+    // Reset the form and go back to upload view
+    resetPdfUpload();
+    
+    // Show upload section and hide review section
+    document.querySelector('.upload-section').classList.remove('hidden');
+    document.getElementById('review-questions').classList.add('hidden');
+}
+
+async function loadExamsForPdfImport() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/exams', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            const select = document.getElementById('examId');
+            select.innerHTML = '<option value="">Select Exam (optional)</option>';
+            
+            data.data.forEach(exam => {
+                const option = document.createElement('option');
+                option.value = exam.id;
+                option.textContent = exam.title;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading exams:', error);
+    }
+}
+
+async function handleImportQuestions(event) {
+    event.preventDefault();
+    
+    if (extractedQuestions.length === 0) {
+        showAlert('No questions to import', 'error');
+        return;
+    }
+    
+    const formData = new FormData(event.target);
+    const importData = {
+        questions: extractedQuestions,
+        topic_title: formData.get('topic_title') || null,
+        topic_description: formData.get('topic_description') || null,
+        topic_level: formData.get('topic_level'),
+        exam_id: formData.get('exam_id') || null
+    };
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/pdf/import', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(importData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayImportResults(data.data);
+        } else {
+            showAlert(data.message || 'Error importing questions', 'error');
+        }
+    } catch (error) {
+        console.error('Error importing questions:', error);
+        showAlert('Error importing questions', 'error');
+    }
+}
+
+function displayImportResults(results) {
+    const importSummary = document.getElementById('import-summary');
+    
+    let html = '<div class="import-success">';
+    html += '<h4>Import Completed Successfully!</h4>';
+    
+    if (results.topic_id) {
+        html += '<p><strong>Topic created:</strong> Yes</p>';
+    }
+    
+    html += '</div>';
+    
+    html += '<div class="import-stats">';
+    html += `<div class="import-stat">
+        <div class="number">${results.imported}</div>
+        <div class="label">Questions Imported</div>
+    </div>`;
+    
+    if (results.errors && results.errors.length > 0) {
+        html += `<div class="import-stat">
+            <div class="number">${results.errors.length}</div>
+            <div class="label">Errors</div>
+        </div>`;
+    }
+    html += '</div>';
+    
+    if (results.errors && results.errors.length > 0) {
+        html += '<div class="import-error">';
+        html += '<h4>Import Errors:</h4>';
+        results.errors.forEach(error => {
+            html += `<p><strong>Question:</strong> ${error.question}</p>`;
+            html += `<p><strong>Error:</strong> ${error.error}</p>`;
+        });
+        html += '</div>';
+    }
+    
+    importSummary.innerHTML = html;
+    
+    document.getElementById('extraction-results').classList.add('hidden');
+    document.getElementById('import-results').classList.remove('hidden');
+}
+
+function resetPdfUpload() {
+    extractedQuestions = [];
+    document.getElementById('pdfUploadForm').reset();
+    document.getElementById('importForm').reset();
+    document.getElementById('extraction-results').classList.add('hidden');
+    document.getElementById('import-results').classList.add('hidden');
+    document.getElementById('review-questions').classList.add('hidden');
+    document.getElementById('extracted-questions-list').innerHTML = '';
+    document.getElementById('review-questions-list').innerHTML = '';
+    
+    // Show upload section
+    document.querySelector('.upload-section').classList.remove('hidden');
 } 

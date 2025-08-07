@@ -1,0 +1,46 @@
+# Toledo 2020 Questions Template
+# Instructions: Copy questions from the PDF and paste them in this format
+# Each question should follow this structure:
+# 1. Question text?
+# A. Option 1
+# B. Option 2
+# C. Option 3
+# D. Option 4
+
+# Example format:
+# 1. ¿Cuál es la capital de Francia?
+# A. Londres
+# B. París
+# C. Madrid
+# D. Roma
+
+# Start extracting your questions below:
+# ==========================================
+
+1. [Paste your first question here]
+A. [Option A]
+B. [Option B]
+C. [Option C]
+D. [Option D]
+
+2. [Paste your second question here]
+A. [Option A]
+B. [Option B]
+C. [Option C]
+D. [Option D]
+
+3. [Paste your third question here]
+A. [Option A]
+B. [Option B]
+C. [Option C]
+D. [Option D]
+
+# Continue adding questions in the same format...
+# ==========================================
+
+# Notes:
+# - Make sure each question starts with a number followed by a period
+# - Each answer option should start with A., B., C., or D.
+# - If you know the correct answer, you can mark it with (CORRECT) at the end
+# - Example: A. París (CORRECT)
+# - Save this file and upload it as a text file instead of PDF 

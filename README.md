@@ -13,11 +13,15 @@ A PHP project built using Domain-Driven Design (DDD) principles with secure user
 - **Learning Portal**: Complete educational platform with topics, exams, and user management
 - **Role-Based Access Control**: Admin and Super Admin roles for content management
 - **Automatic Route Protection**: All routes protected by authentication by default
+- **PDF OCR Processing**: Advanced OCR system using Google Gemini Vision API
+- **RabbitMQ Queue System**: Asynchronous processing for scanned PDFs with robust queue management
 
 ## 🌐 Web Interface
 
 - **Login Portal**: http://localhost:8080/login.html
 - **User Dashboard**: http://localhost:8080/dashboard.html (requires authentication)
+- **Admin Panel**: http://localhost:8080/admin.html (admin access required)
+- **RabbitMQ Management**: http://localhost:15672 (admin/admin123)
 
 ## 📡 API Endpoints
 
@@ -50,6 +54,39 @@ A PHP project built using Domain-Driven Design (DDD) principles with secure user
 - **GET /exams** - List all exams
 - **POST /exams** - Create new exam (admin only)
 - **GET /learning/stats** - Get learning statistics
+
+### PDF Processing
+- **POST /pdf/upload** - Upload PDF for OCR processing
+- **POST /pdf/import** - Import extracted questions to database
+
+## 🔄 Queue System (RabbitMQ)
+
+The project includes a robust queue system for processing scanned PDFs asynchronously:
+
+### Queue Architecture
+- **PDF OCR Queue**: Converts PDFs to images
+- **Gemini API Queue**: Processes images with Google Gemini Vision API
+- **Results Queue**: Saves results and sends notifications
+- **Dead Letter Queue**: Handles failed jobs
+
+### Workers
+- **PDF OCR Worker**: `scripts/workers/pdf-ocr-worker.php`
+- **Gemini API Worker**: `scripts/workers/gemini-api-worker.php`
+- **Results Worker**: `scripts/workers/results-worker.php`
+
+### Queue Management
+```bash
+# Start workers
+docker-compose exec app php scripts/start-workers.php
+
+# Monitor queues
+docker-compose exec app php scripts/monitor-queues.php
+
+# Test queue system
+docker-compose exec app php scripts/test-queue-system.php
+```
+
+For detailed queue documentation, see [QUEUE_SERVICE_DOCUMENTATION.md](QUEUE_SERVICE_DOCUMENTATION.md).
 
 ## 🔐 Security Features
 

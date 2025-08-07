@@ -2,6 +2,21 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// Load environment variables
+$envFile = __DIR__ . '/../env.local';
+if (!file_exists($envFile)) {
+    $envFile = __DIR__ . '/../.env';
+}
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
+            [$key, $value] = explode('=', $line, 2);
+            $_ENV[trim($key)] = trim($value);
+        }
+    }
+}
+
 use App\Infrastructure\Container\Container;
 use App\Application\Commands\CreateTopicCommand;
 use App\Application\Commands\CreateExamCommand;

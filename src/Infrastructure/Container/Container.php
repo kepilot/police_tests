@@ -9,6 +9,7 @@ use App\Application\Commands\LoginUserHandler;
 use App\Application\Commands\RegisterUserHandler;
 use App\Application\Commands\CreateTopicHandler;
 use App\Application\Commands\CreateExamHandler;
+use App\Application\Commands\CreateQuestionHandler;
 use App\Application\Commands\AssignExamHandler;
 use App\Application\Commands\AssociateQuestionWithTopicHandler;
 use App\Application\Commands\DisassociateQuestionFromTopicHandler;
@@ -38,6 +39,7 @@ use App\Presentation\Controllers\QuestionController;
 use App\Presentation\Controllers\ExamAssignmentController;
 use App\Presentation\Controllers\ExamAttemptController;
 use App\Presentation\Controllers\LearningController;
+use App\Presentation\Controllers\PdfUploadController;
 
 final class Container
 {
@@ -87,6 +89,7 @@ final class Container
         $this->services[LoginUserHandler::class] = fn() => new LoginUserHandler($this->get(UserRepositoryInterface::class), $this->get(JwtService::class));
         $this->services[CreateTopicHandler::class] = fn() => new CreateTopicHandler($this->get(TopicRepositoryInterface::class));
         $this->services[CreateExamHandler::class] = fn() => new CreateExamHandler($this->get(ExamRepositoryInterface::class), $this->get(TopicRepositoryInterface::class));
+        $this->services[CreateQuestionHandler::class] = fn() => new CreateQuestionHandler($this->get(QuestionRepositoryInterface::class));
         $this->services[AssignExamHandler::class] = fn() => new AssignExamHandler($this->get(ExamAssignmentRepositoryInterface::class), $this->get(UserRepositoryInterface::class), $this->get(ExamRepositoryInterface::class));
         $this->services[AssociateQuestionWithTopicHandler::class] = fn() => new AssociateQuestionWithTopicHandler($this->get(QuestionTopicService::class));
         $this->services[DisassociateQuestionFromTopicHandler::class] = fn() => new DisassociateQuestionFromTopicHandler($this->get(QuestionTopicService::class));
@@ -99,6 +102,7 @@ final class Container
         $this->services[ExamAssignmentController::class] = fn() => new ExamAssignmentController($this);
         $this->services[ExamAttemptController::class] = fn() => new ExamAttemptController($this);
         $this->services[LearningController::class] = fn() => new LearningController($this);
+        $this->services[PdfUploadController::class] = fn() => new PdfUploadController($this);
     }
 
     public function get(string $id): object

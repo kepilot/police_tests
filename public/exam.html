@@ -5,20 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Take Exam - Learning Portal</title>
     <link rel="stylesheet" href="/css/exam.css">
-    <script>
-        // Cache busting for JavaScript files
-        function addCacheBuster(url) {
-            const separator = url.includes('?') ? '&' : '?';
-            return `${url}${separator}v=${Date.now()}`;
-        }
-        
-        // Load JavaScript with cache busting
-        function loadScript(src) {
-            const script = document.createElement('script');
-            script.src = addCacheBuster(src);
-            document.head.appendChild(script);
-        }
-    </script>
 </head>
 <body>
     <div class="container">
@@ -82,9 +68,6 @@
         </div>
     </div>
 
-    <script>
-        // Load exam.js with cache busting
-        loadScript('/js/exam.js');
-    </script>
+    <script src="/js/exam.js"></script>
 </body>
 </html> 

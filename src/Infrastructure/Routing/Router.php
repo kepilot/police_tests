@@ -108,6 +108,10 @@ final class Router
         // Exam attempt routes
         $this->addRoute('POST', '/api/learning/start-exam-attempt', [$this, 'handleStartExamAttempt'], true);
         $this->addRoute('POST', '/api/learning/submit-exam-attempt', [$this, 'handleSubmitExamAttempt'], true);
+        
+        // PDF upload routes (admin only)
+        $this->addRoute('POST', '/pdf/upload', [$this, 'handlePdfUpload'], true, 'admin');
+        $this->addRoute('POST', '/pdf/import', [$this, 'handlePdfImport'], true, 'admin');
     }
 
     public function addRoute(string $method, string $path, callable $handler, bool $requiresAuth = true, ?string $requiredRole = null): void
@@ -1181,6 +1185,26 @@ final class Router
 
             http_response_code($result['success'] ? 200 : 400);
             echo json_encode($result);
+        } catch (\Exception $e) {
+            $this->handleError($e);
+        }
+    }
+
+    public function handlePdfUpload(string $path, string $method): void
+    {
+        try {
+            $controller = $this->container->get(\App\Presentation\Controllers\PdfUploadController::class);
+            $controller->uploadPdf();
+        } catch (\Exception $e) {
+            $this->handleError($e);
+        }
+    }
+
+    public function handlePdfImport(string $path, string $method): void
+    {
+        try {
+            $controller = $this->container->get(\App\Presentation\Controllers\PdfUploadController::class);
+            $controller->importQuestions();
         } catch (\Exception $e) {
             $this->handleError($e);
         }

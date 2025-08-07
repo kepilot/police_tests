@@ -1,0 +1,31 @@
+PREGUNTAS DE EJEMPLO
+
+1. ¿Cuál es la capital de Francia?
+   A. Londres
+   B. París
+   C. Madrid
+   D. Roma
+
+2. ¿En qué año comenzó la Segunda Guerra Mundial?
+   A. 1939
+   B. 1940
+   C. 1941
+   D. 1942
+
+3. ¿Cuál es el planeta más grande del sistema solar?
+   A. Tierra
+   B. Marte
+   C. Júpiter
+   D. Saturno
+
+4. ¿Quién escribió 'Don Quijote'?
+   A. Miguel de Cervantes
+   B. William Shakespeare
+   C. Dante Alighieri
+   D. Johann Wolfgang von Goethe
+
+5. ¿Cuál es el elemento químico más abundante en el universo?
+   A. Helio
+   B. Carbono
+   C. Oxígeno
+   D. Hidrógeno
