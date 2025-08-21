@@ -165,12 +165,12 @@ class PdfUploadController
             error_log("PDF Producer: " . ($details['Producer'] ?? 'Unknown'));
             error_log("OCR processing required for scanned documents");
             
-            // Verificar si tenemos la API key de Gemini
+            // Require Gemini API key
             $apiKey = $_ENV['GEMINI_API_KEY'] ?? '';
             if (!$apiKey) {
                 return [[
-                    'question' => '⚠️ No Gemini API key configured. Set GEMINI_API_KEY in el entorno.',
-                    'options' => ['Contacta al administrador'],
+                    'question' => 'No Gemini API key configured. Set GEMINI_API_KEY in environment.',
+                    'options' => ['Contact administrator'],
                     'correct_option' => 0,
                     'type' => 'multiple_choice',
                     'points' => 1,
@@ -178,50 +178,32 @@ class PdfUploadController
                 ]];
             }
 
-            // Verificar si RabbitMQ está disponible para procesamiento asíncrono
-            try {
-                require_once __DIR__ . '/../../Infrastructure/Services/GeminiOcrService.php';
-                require_once __DIR__ . '/../../Infrastructure/Services/QueueService.php';
-                
-                $ocrService = new \App\Infrastructure\Services\GeminiOcrService($apiKey);
-                $queueService = new \App\Infrastructure\Services\QueueService();
-                
-                // Generar un ID único para el trabajo
-                $jobId = uniqid('pdf_ocr_', true);
-                $userId = $_SESSION['user_id'] ?? 'anonymous';
-                
-                // Iniciar procesamiento asíncrono
-                $result = $ocrService->processPdfAsync($pdfPath, $jobId, $userId);
-                
-                if ($result['success']) {
-                    return [[
-                        'question' => '🔄 PDF escaneado detectado. El procesamiento ha sido encolado.',
-                        'options' => [
-                            'Job ID: ' . $result['job_id'],
-                            'Estado: ' . $result['status'],
-                            'Mensaje: ' . $result['message']
-                        ],
-                        'correct_option' => 0,
-                        'type' => 'multiple_choice',
-                        'points' => 1,
-                        'note' => 'async_processing_queued',
-                        'job_id' => $result['job_id'],
-                        'async_processing' => true
-                    ]];
-                } else {
-                    // Fallback a procesamiento síncrono si falla el encolamiento
-                    error_log("Async processing failed, falling back to sync processing");
-                    return $ocrService->extractQuestionsFromPdf($pdfPath);
+            // Synchronous OCR extraction to return actual questions to the client
+            require_once __DIR__ . '/../../Infrastructure/Services/GeminiOcrService.php';
+            $ocrService = new \App\Infrastructure\Services\GeminiOcrService($apiKey);
+            $rawQuestions = $ocrService->extractQuestionsFromPdf($pdfPath);
+
+            // Normalize to required schema
+            $normalized = array_values(array_filter(array_map(function ($q) {
+                if (!is_array($q)) return null;
+                $question = trim($q['question'] ?? '');
+                $options = $q['options'] ?? [];
+                $correct = $q['correct_option'] ?? 0;
+                if ($question === '' || !is_array($options) || count($options) === 0) return null;
+                // Bound correct option
+                if (!is_int($correct) || $correct < 0 || $correct >= count($options)) {
+                    $correct = 0;
                 }
-                
-            } catch (\Exception $e) {
-                error_log("Error with async processing: " . $e->getMessage());
-                error_log("Falling back to sync processing");
-                
-                // Fallback a procesamiento síncrono
-                $ocrService = new \App\Infrastructure\Services\GeminiOcrService($apiKey);
-                return $ocrService->extractQuestionsFromPdf($pdfPath);
-            }
+                return [
+                    'question' => $question,
+                    'options' => array_values(array_map('trim', $options)),
+                    'correct_option' => $correct,
+                    'type' => 'multiple_choice',
+                    'points' => isset($q['points']) && is_int($q['points']) ? $q['points'] : 1,
+                ];
+            }, $rawQuestions)));
+
+            return $normalized;
         }
         
         $text = $pdf->getText();
