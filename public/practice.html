@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Test - DDD Learning Portal</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        .practice-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .practice-setup {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .practice-setup h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .form-group select[multiple] {
+            height: 120px;
+        }
+        
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .topic-checkbox {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .topic-checkbox:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+        }
+        
+        .topic-checkbox.selected {
+            border-color: #007bff;
+            background-color: #e3f2fd;
+        }
+        
+        .topic-checkbox input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        
+        .topic-checkbox .topic-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .topic-checkbox .topic-description {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .topic-checkbox .topic-level {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #e9ecef;
+            color: #495057;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .create-test-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        
+        .create-test-btn:hover {
+            background: #218838;
+        }
+        
+        .create-test-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .practice-test {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .practice-test h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .question {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .question h4 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        
+        .question p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .option:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        
+        .option.selected {
+            border-color: #007bff;
+            background-color: #e3f2fd;
+        }
+        
+        .option input[type="radio"] {
+            margin-right: 10px;
+        }
+        
+        .submit-test-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+        
+        .submit-test-btn:hover {
+            background: #0056b3;
+        }
+        
+        .results {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .results h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .score-summary {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .score-summary .percentage {
+            font-size: 48px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        
+        .score-summary .passed {
+            color: #28a745;
+        }
+        
+        .score-summary .failed {
+            color: #dc3545;
+        }
+        
+        .back-to-practice {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+        
+        .back-to-practice:hover {
+            background: #5a6268;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>Practice Test</h1>
+            <p>Create custom practice tests with random questions</p>
+        </div>
+        <div>
+            <button class="btn btn-secondary" onclick="goToDashboard()">Dashboard</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="practice-container">
+        <!-- Practice Test Setup -->
+        <div class="practice-setup" id="practiceSetup">
+            <h2>🎯 Create Your Practice Test</h2>
+            
+            <div class="form-group">
+                <label for="difficulty">Difficulty Level:</label>
+                <select id="difficulty">
+                    <option value="all">All Levels</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                    <option value="expert">Expert</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="questionCount">Number of Questions:</label>
+                <input type="number" id="questionCount" min="5" max="50" value="10">
+            </div>
+            
+            <div class="form-group">
+                <label>Select Topics:</label>
+                <div id="topicsContainer" class="loading">
+                    Loading available topics...
+                </div>
+            </div>
+            
+            <button class="create-test-btn" id="createTestBtn" onclick="createPracticeTest()" disabled>
+                Create Practice Test
+            </button>
+        </div>
+
+        <!-- Practice Test Interface -->
+        <div class="practice-test" id="practiceTest">
+            <h3 id="testTitle">Practice Test</h3>
+            <div id="questionsContainer"></div>
+            <button class="submit-test-btn" onclick="submitPracticeTest()">Submit Test</button>
+        </div>
+
+        <!-- Results -->
+        <div class="results" id="results">
+            <h3>Practice Test Results</h3>
+            <div id="scoreSummary" class="score-summary"></div>
+            <div id="questionResults"></div>
+            <button class="back-to-practice" onclick="backToPractice()">Create Another Test</button>
+        </div>
+
+        <!-- Error Display -->
+        <div id="errorDisplay" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        let availableTopics = [];
+        let selectedTopics = [];
+        let currentPracticeTest = null;
+        let userAnswers = {};
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAvailableTopics();
+        });
+
+        async function loadAvailableTopics() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showError('Authentication token not found. Please login again.');
+                    return;
+                }
+
+                const response = await fetch('/practice/topics', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    availableTopics = data.data;
+                    renderTopics();
+                } else {
+                    showError(data.message || 'Failed to load topics');
+                }
+            } catch (error) {
+                console.error('Error loading topics:', error);
+                showError('Failed to load available topics: ' + error.message);
+            }
+        }
+
+        function renderTopics() {
+            const container = document.getElementById('topicsContainer');
+            container.innerHTML = '';
+
+            availableTopics.forEach(topic => {
+                const topicDiv = document.createElement('div');
+                topicDiv.className = 'topic-checkbox';
+                topicDiv.onclick = () => toggleTopic(topic.id);
+                
+                topicDiv.innerHTML = `
+                    <input type="checkbox" id="topic_${topic.id}" ${selectedTopics.includes(topic.id) ? 'checked' : ''}>
+                    <div class="topic-title">${topic.title}</div>
+                    <div class="topic-description">${topic.description}</div>
+                    <div class="topic-level">${topic.level_display}</div>
+                `;
+                
+                container.appendChild(topicDiv);
+            });
+
+            updateCreateButton();
+        }
+
+        function toggleTopic(topicId) {
+            const index = selectedTopics.indexOf(topicId);
+            if (index > -1) {
+                selectedTopics.splice(index, 1);
+            } else {
+                selectedTopics.push(topicId);
+            }
+            
+            // Update checkbox state
+            const checkbox = document.getElementById(`topic_${topicId}`);
+            if (checkbox) {
+                checkbox.checked = selectedTopics.includes(topicId);
+            }
+            
+            // Update visual state
+            const topicDiv = checkbox.closest('.topic-checkbox');
+            if (selectedTopics.includes(topicId)) {
+                topicDiv.classList.add('selected');
+            } else {
+                topicDiv.classList.remove('selected');
+            }
+            
+            updateCreateButton();
+        }
+
+        function updateCreateButton() {
+            const createBtn = document.getElementById('createTestBtn');
+            createBtn.disabled = selectedTopics.length === 0;
+        }
+
+        async function createPracticeTest() {
+            if (selectedTopics.length === 0) {
+                showError('Please select at least one topic');
+                return;
+            }
+
+            const difficulty = document.getElementById('difficulty').value;
+            const questionCount = parseInt(document.getElementById('questionCount').value);
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/practice/create', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        topic_ids: selectedTopics,
+                        difficulty: difficulty,
+                        question_count: questionCount
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    currentPracticeTest = data.data;
+                    displayPracticeTest();
+                } else {
+                    showError(data.message || 'Failed to create practice test');
+                }
+            } catch (error) {
+                console.error('Error creating practice test:', error);
+                showError('Failed to create practice test: ' + error.message);
+            }
+        }
+
+        function displayPracticeTest() {
+            document.getElementById('practiceSetup').style.display = 'none';
+            document.getElementById('practiceTest').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('errorDisplay').style.display = 'none';
+
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            currentPracticeTest.questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                
+                let optionsHtml = '';
+                if (question.options && question.options.length > 0) {
+                    optionsHtml = '<div class="options">';
+                    question.options.forEach((option, optionIndex) => {
+                        optionsHtml += `
+                            <div class="option" onclick="selectOption(${index}, ${optionIndex})">
+                                <input type="radio" name="question_${index}" value="${optionIndex}" 
+                                       ${userAnswers[index] === optionIndex ? 'checked' : ''}>
+                                <span>${String.fromCharCode(65 + optionIndex)}. ${option}</span>
+                            </div>
+                        `;
+                    });
+                    optionsHtml += '</div>';
+                }
+
+                questionDiv.innerHTML = `
+                    <h4>Question ${index + 1}</h4>
+                    <p>${question.text}</p>
+                    ${optionsHtml}
+                `;
+                
+                container.appendChild(questionDiv);
+            });
+        }
+
+        function selectOption(questionIndex, optionIndex) {
+            userAnswers[questionIndex] = optionIndex;
+            
+            // Update visual state
+            const questionDiv = document.querySelectorAll('.question')[questionIndex];
+            const options = questionDiv.querySelectorAll('.option');
+            options.forEach((option, idx) => {
+                if (idx === optionIndex) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+            
+            // Update radio button
+            const radio = questionDiv.querySelector(`input[name="question_${questionIndex}"][value="${optionIndex}"]`);
+            if (radio) {
+                radio.checked = true;
+            }
+        }
+
+        async function submitPracticeTest() {
+            const answeredQuestions = Object.keys(userAnswers).length;
+            const totalQuestions = currentPracticeTest.questions.length;
+            
+            if (answeredQuestions < totalQuestions) {
+                if (!confirm(`You have only answered ${answeredQuestions} out of ${totalQuestions} questions. Do you want to submit anyway?`)) {
+                    return;
+                }
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/practice/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        practice_test_id: currentPracticeTest.practice_test_id,
+                        answers: userAnswers
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    displayResults(data.data);
+                } else {
+                    showError(data.message || 'Failed to submit practice test');
+                }
+            } catch (error) {
+                console.error('Error submitting practice test:', error);
+                showError('Failed to submit practice test: ' + error.message);
+            }
+        }
+
+        function displayResults(results) {
+            document.getElementById('practiceSetup').style.display = 'none';
+            document.getElementById('practiceTest').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('errorDisplay').style.display = 'none';
+
+            // Display score summary
+            const scoreSummary = document.getElementById('scoreSummary');
+            const passedClass = results.passed ? 'passed' : 'failed';
+            const passedText = results.passed ? 'PASSED' : 'FAILED';
+            
+            scoreSummary.innerHTML = `
+                <div class="percentage ${passedClass}">${results.percentage}%</div>
+                <div class="${passedClass}">${passedText}</div>
+                <p><strong>Score:</strong> ${results.earned_points}/${results.total_points} points</p>
+                <p><strong>Correct Answers:</strong> ${results.correct_answers}/${results.total_questions}</p>
+            `;
+
+            // Display question results
+            const questionResults = document.getElementById('questionResults');
+            questionResults.innerHTML = '<h4>Question Results:</h4>';
+            
+            results.question_results.forEach((result, index) => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'question';
+                resultDiv.style.borderLeft = result.is_correct ? '4px solid #28a745' : '4px solid #dc3545';
+                
+                const correctText = result.is_correct ? '✅ Correct' : '❌ Incorrect';
+                const correctClass = result.is_correct ? 'text-success' : 'text-danger';
+                
+                resultDiv.innerHTML = `
+                    <h4>Question ${index + 1}</h4>
+                    <p>${result.text}</p>
+                    <p><strong>Your Answer:</strong> ${result.selected_answer}</p>
+                    <p><strong>Correct Answer:</strong> ${result.correct_answer}</p>
+                    <p class="${correctClass}"><strong>${correctText}</strong></p>
+                    <p><strong>Points:</strong> ${result.earned_points}/${result.points}</p>
+                `;
+                
+                questionResults.appendChild(resultDiv);
+            });
+        }
+
+        function backToPractice() {
+            // Reset state
+            selectedTopics = [];
+            currentPracticeTest = null;
+            userAnswers = {};
+            
+            // Reset UI
+            document.getElementById('practiceSetup').style.display = 'block';
+            document.getElementById('practiceTest').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('errorDisplay').style.display = 'none';
+            
+            // Reset form
+            document.getElementById('difficulty').value = 'all';
+            document.getElementById('questionCount').value = 10;
+            
+            // Re-render topics
+            renderTopics();
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorDisplay');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function goToDashboard() {
+            window.location.href = '/dashboard.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        }
+    </script>
+</body>
+</html>

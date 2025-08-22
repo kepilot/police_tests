@@ -42,6 +42,7 @@ final class Router
         $this->addRoute('GET', '/dashboard.html', [$this, 'handleDashboardPage'], false);
         $this->addRoute('GET', '/admin.html', [$this, 'handleAdminPage'], true, 'admin');
         $this->addRoute('GET', '/exam.html', [$this, 'handleExamPage'], false);
+        $this->addRoute('GET', '/practice.html', [$this, 'handlePracticePage'], true);
 
         // Authentication routes (public)
         $this->addRoute('POST', '/auth/register', [$this, 'handleRegister']);
@@ -112,6 +113,12 @@ final class Router
         // PDF upload routes (admin only)
         $this->addRoute('POST', '/pdf/upload', [$this, 'handlePdfUpload'], true, 'admin');
         $this->addRoute('POST', '/pdf/import', [$this, 'handlePdfImport'], true, 'admin');
+        
+        // Practice test routes (authenticated users)
+        $this->addRoute('GET', '/practice/topics', [$this, 'handleGetPracticeTopics'], true);
+        $this->addRoute('POST', '/practice/create', [$this, 'handleCreatePracticeTest'], true);
+        $this->addRoute('POST', '/practice/submit', [$this, 'handleSubmitPracticeTest'], true);
+        $this->addRoute('GET', '/practice/stats', [$this, 'handleGetPracticeStats'], true);
     }
 
     public function addRoute(string $method, string $path, callable $handler, bool $requiresAuth = true, ?string $requiredRole = null): void
@@ -529,6 +536,24 @@ final class Router
         } else {
             http_response_code(404);
             echo 'Exam page not found';
+        }
+    }
+
+    public function handlePracticePage(string $path, string $method): void
+    {
+        // Check if user is authenticated
+        if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+            header('Location: /login.html');
+            exit();
+        }
+
+        $practicePath = __DIR__ . '/../../../public/practice.html';
+        if (file_exists($practicePath)) {
+            header('Content-Type: text/html');
+            echo file_get_contents($practicePath);
+        } else {
+            http_response_code(404);
+            echo 'Practice page not found';
         }
     }
 
@@ -1205,6 +1230,77 @@ final class Router
         try {
             $controller = $this->container->get(\App\Presentation\Controllers\PdfUploadController::class);
             $controller->importQuestions();
+        } catch (\Exception $e) {
+            $this->handleError($e);
+        }
+    }
+
+    public function handleGetPracticeTopics(string $path, string $method): void
+    {
+        try {
+            $controller = $this->container->get(\App\Presentation\Controllers\PracticeTestController::class);
+            $result = $controller->getAvailableTopics();
+            
+            http_response_code($result['success'] ? 200 : 400);
+            header('Content-Type: application/json');
+            echo json_encode($result);
+        } catch (\Exception $e) {
+            $this->handleError($e);
+        }
+    }
+
+    public function handleCreatePracticeTest(string $path, string $method): void
+    {
+        try {
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!$input) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid JSON input']);
+                return;
+            }
+
+            $controller = $this->container->get(\App\Presentation\Controllers\PracticeTestController::class);
+            $result = $controller->createPracticeTest($input);
+            
+            http_response_code($result['success'] ? 200 : 400);
+            header('Content-Type: application/json');
+            echo json_encode($result);
+        } catch (\Exception $e) {
+            $this->handleError($e);
+        }
+    }
+
+    public function handleSubmitPracticeTest(string $path, string $method): void
+    {
+        try {
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!$input) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid JSON input']);
+                return;
+            }
+
+            $controller = $this->container->get(\App\Presentation\Controllers\PracticeTestController::class);
+            $result = $controller->submitPracticeTest($input);
+            
+            http_response_code($result['success'] ? 200 : 400);
+            header('Content-Type: application/json');
+            echo json_encode($result);
+        } catch (\Exception $e) {
+            $this->handleError($e);
+        }
+    }
+
+    public function handleGetPracticeStats(string $path, string $method): void
+    {
+        try {
+            $userId = $_SESSION['user_id'] ?? 'anonymous';
+            $controller = $this->container->get(\App\Presentation\Controllers\PracticeTestController::class);
+            $result = $controller->getPracticeTestStats($userId);
+            
+            http_response_code($result['success'] ? 200 : 200);
+            header('Content-Type: application/json');
+            echo json_encode($result);
         } catch (\Exception $e) {
             $this->handleError($e);
         }
